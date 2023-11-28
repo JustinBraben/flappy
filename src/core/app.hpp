@@ -27,7 +27,9 @@ protected:
 	void sRender();
 	void sMovement();
 	void sScore();
+	void sCollision();
 
+	sf::Vector2f checkOverlap(const entt::entity& a, const entt::entity& b);
 	void backgroundRender();
 	void playerRender();
 	void pipeRender();

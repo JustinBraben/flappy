@@ -86,29 +86,47 @@ void Application::init()
 
 void Application::update()
 {
-    m_elapsedTime = m_clock.getElapsedTime();
+    if (m_running)
+    {
+        m_elapsedTime = m_clock.getElapsedTime();
+
+        sCleanUpEntities();
+
+        sMovement();
+
+        sCollision();
+
+        if (m_elapsedTime.asSeconds() >= 1)
+        {
+            //std::cout << "100 milliseconds have passed\n";
+            //sMovement();
+            sPipeSpawner();
+            m_clock.restart();
+        }
+    }
 
     sUserInput();
 
-    // TODO: 
-    // update entity manager
-    sCleanUpEntities();
+    //// TODO: 
+    //// update entity manager
+    //sCleanUpEntities();
 
-    // pipe spawner
+    //// pipe spawner
 
-    // movement
-    sMovement();
+    //// movement
+    //sMovement();
 
-    // collision
-    // animation
+    //// collision
+    //sCollision();
+    //// animation
 
-    if (m_elapsedTime.asSeconds() >= 1)
-    {
-        //std::cout << "100 milliseconds have passed\n";
-        //sMovement();
-        sPipeSpawner();
-        m_clock.restart();
-    }
+    //if (m_elapsedTime.asSeconds() >= 1)
+    //{
+    //    //std::cout << "100 milliseconds have passed\n";
+    //    //sMovement();
+    //    sPipeSpawner();
+    //    m_clock.restart();
+    //}
 
     // render
     sRender();
@@ -324,6 +342,46 @@ void Application::sScore()
     }
 }
 
+void Application::sCollision()
+{
+    const auto pipeView = m_reg.view<Position, BoundingBox, PipeSprite>();
+
+    for (const auto& e : pipeView)
+    {
+        auto playerView = m_reg.view<Position, Velocity, PlayerSprite, BoundingBox>();
+
+        for (const auto& player : playerView)
+        {
+            auto overlap = checkOverlap(player, e);
+
+            if (overlap.x > 0 && overlap.y > 0)
+            {
+                auto& velocity = playerView.get<Velocity>(player);
+                velocity.vel.y = 0;
+                //m_running = false;
+            }
+        }
+    }
+}
+
+sf::Vector2f Application::checkOverlap(const entt::entity& a, const entt::entity& b)
+{
+    auto& aBox = m_reg.get<BoundingBox>(a);
+    auto& aPos = m_reg.get<Position>(a);
+    auto& bBox = m_reg.get<BoundingBox>(b);
+    auto& bPos = m_reg.get<Position>(b);
+
+    sf::Vector2f delta = { std::abs(aPos.pos.x - bPos.pos.x) ,
+                        std::abs(aPos.pos.y - bPos.pos.y) };
+
+    auto overlapX = aBox.halfSize.x + bBox.halfSize.x - delta.x;
+    auto overlapY = aBox.halfSize.y + bBox.halfSize.y - delta.y;
+
+    auto overlap = sf::Vector2f(overlapX, overlapY);
+
+    return overlap;
+}
+
 void Application::backgroundRender()
 {
     sf::Sprite background;
@@ -340,14 +398,16 @@ void Application::backgroundRender()
 
 void Application::playerRender()
 {
-    const auto view = m_reg.view<Position, BoundingBox, PlayerSprite>();
+    const auto view = m_reg.view<Position, BoundingBox, Velocity, PlayerSprite>();
 
     for (const auto& e : view)
     {
         auto& pos = view.get<Position>(e).pos;
         auto& box = view.get<BoundingBox>(e);
+        auto& velocity = view.get<Velocity>(e).vel;
         auto& sprite = view.get<PlayerSprite>(e).id;
         sprite.setOrigin(box.halfSize);
+        sprite.setRotation(velocity.y * 40.f);
         sprite.setPosition(pos);
         /*sprite.setScale(
             m_scale
