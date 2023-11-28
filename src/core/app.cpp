@@ -173,14 +173,14 @@ void Application::sPipeSpawner()
 {
     sf::Sprite pipeSprite;
     pipeSprite.setTexture(m_textureMap["pipe-green"]);
-    auto& posVec1 = sf::Vector2f(1000.f, 400.f);
-    auto& velVec1 = sf::Vector2f(-2.f, 0.f);
+    auto posVec1 = sf::Vector2f(1000.f, 400.f);
+    auto velVec1 = sf::Vector2f(-2.f, 0.f);
     const entt::entity pipe = makePipe(m_reg, pipeSprite, posVec1, velVec1);
     
     sf::Sprite upsideDownPipeSprite;
     upsideDownPipeSprite.setTexture(m_textureMap["pipe-green"]);
-    auto& posVec2 = sf::Vector2f(1000.f, 200.f);
-    auto& velVec2 = sf::Vector2f(-2.f, 0.f);
+    auto posVec2 = sf::Vector2f(1000.f, 200.f);
+    auto velVec2 = sf::Vector2f(-2.f, 0.f);
 
     upsideDownPipeSprite.setScale(upsideDownPipeSprite.getScale().x, -1.f * upsideDownPipeSprite.getScale().y);
     const entt::entity upsideDownPipe = makePipe(m_reg, upsideDownPipeSprite, posVec2, velVec2);

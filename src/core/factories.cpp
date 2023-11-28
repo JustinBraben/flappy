@@ -18,7 +18,7 @@ entt::entity makePlayer(entt::registry &reg, sf::Sprite &sprite)
 	return player;
 }
 
-entt::entity makePipe(entt::registry &reg, sf::Sprite& sprite, sf::Vector2f& pos, sf::Vector2f& velocity)
+entt::entity makePipe(entt::registry &reg, sf::Sprite& sprite, sf::Vector2f pos, sf::Vector2f velocity)
 {
 	const entt::entity pipe = reg.create();
 	reg.emplace<Pipe>(pipe);
