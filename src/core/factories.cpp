@@ -6,6 +6,7 @@
 #include "../components/boundingbox.hpp"
 #include "../components/gravity.hpp"
 #include "../components/jump.hpp"
+#include "../components/passedbird.hpp"
 #include "../components/pipe.hpp"
 #include "../components/player.hpp"
 #include "../components/position.hpp"
@@ -53,5 +54,6 @@ entt::entity makePipe(entt::registry &reg, sf::Sprite& sprite, sf::Vector2f pos,
 	reg.emplace<PipeSprite>(pipe, sprite);
 	reg.emplace<Velocity>(pipe, velocity);
 	reg.emplace<BoundingBox>(pipe, size, halfSize);
+	reg.emplace<PassedBird>(pipe, false);
 	return pipe;
 }

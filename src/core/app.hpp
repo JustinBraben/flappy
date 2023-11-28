@@ -8,6 +8,7 @@ class Application {
 protected:
 	sf::RenderWindow m_window;
 	bool m_running = true;
+	int m_score;
 	std::map<std::string, sf::Texture> m_textureMap;
 	sf::Vector2f m_scale;
 	entt::registry m_reg;
@@ -25,6 +26,7 @@ protected:
 	void sPipeSpawner();
 	void sRender();
 	void sMovement();
+	void sScore();
 
 	void backgroundRender();
 	void playerRender();

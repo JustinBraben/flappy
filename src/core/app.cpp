@@ -6,6 +6,7 @@
 #include "../components/boundingbox.hpp"
 #include "../components/gravity.hpp"
 #include "../components/jump.hpp"
+#include "../components/passedbird.hpp"
 #include "../components/pipe.hpp"
 #include "../components/player.hpp"
 #include "../components/position.hpp"
@@ -14,6 +15,8 @@
 #include "../sys/pipe_behaviour.hpp"
 
 #include <iostream>
+#include <vector>
+#include <string>
 #include <filesystem>
 
 
@@ -75,6 +78,8 @@ void Application::init()
     const entt::entity player = makePlayer(m_reg, playerSprite);
 
     m_randomGenerator = std::mt19937(m_randomDevice());
+
+    m_score = 0;
 
     m_clock.restart();
 }
@@ -239,18 +244,30 @@ void Application::sRender()
 
     collisionRender();
 
+    sScore();
+
     m_window.display();
 }
 
 void Application::sMovement()
 {
-    const auto view = m_reg.view<Position, PipeSprite, Velocity>();
+    const auto view = m_reg.view<Position, PipeSprite, Velocity, PassedBird>();
 
     for (const auto& e : view)
     {
         auto& pos = view.get<Position>(e).pos;
         auto& velocity = view.get<Velocity>(e).vel;
+        auto& hasPassedBird = view.get<PassedBird>(e).has;
+        auto& sprite = view.get<PipeSprite>(e).id;
         pos.x += velocity.x;
+
+        if (!hasPassedBird && 
+           (pos.x < ((width / 2.f) - (sprite.getTexture()->getSize().x / 2.f))) &&
+            pos.y <= height - (height / 4.f))
+        {
+            m_score += 1;
+            hasPassedBird = true;
+        }
     }
 
     const auto playerView = m_reg.view<Position, Velocity, Gravity>();
@@ -261,8 +278,49 @@ void Application::sMovement()
         auto& velocity = playerView.get<Velocity>(e).vel;
         auto& gravity = playerView.get<Gravity>(e).vel;
         velocity.y += gravity.y;
-        std::clamp(velocity.y, playerMinVelocityY, playerMaxVelocityY);
+        velocity.y = std::clamp(velocity.y, playerMinVelocityY, playerMaxVelocityY);
         pos.y += velocity.y;
+    }
+}
+
+void Application::sScore()
+{
+    // TODO:
+    // get the score
+    // turn it into a string
+    // split them out individually into a vector of strings
+    std::string scoreString = std::to_string(m_score);
+    std::vector<std::string> letters;
+
+    for (auto letter : scoreString)
+    {
+        letters.push_back(std::string(1, letter));
+    }
+
+    sf::Vector2f scoreMiddleLocation = { width / 2.f, 100.f };
+
+    std::vector<sf::Sprite> scoreSprites;
+
+    for (const auto& letter : letters)
+    {
+        auto& texture = m_textureMap[letter];
+        sf::Sprite scoreSprite;
+        scoreSprite.setTexture(texture);
+        scoreSprite.setOrigin(
+            texture.getSize().x / 2.f,
+            texture.getSize().y / 2.f
+        );
+        scoreSprites.push_back(scoreSprite);
+    }
+
+    for (auto& sprite : scoreSprites)
+    {
+        sprite.setPosition(
+            scoreMiddleLocation.x,
+            scoreMiddleLocation.y
+        );
+        scoreMiddleLocation.x += sprite.getTexture()->getSize().x;
+        m_window.draw(sprite);
     }
 }
 
