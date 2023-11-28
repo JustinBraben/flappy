@@ -73,15 +73,34 @@ void Application::init()
     else {
         std::cerr << "Directory not found." << "\n";
     }
+
+    restart();
+
+    m_randomGenerator = std::mt19937(m_randomDevice());
+
+    m_clock.restart();
+}
+
+void Application::restart()
+{
+    auto playerView = m_reg.view<Player, Position, PlayerSprite, Velocity, BoundingBox, Gravity, Jump>();
+    
+    for (auto& player : playerView)
+    {
+        m_reg.remove<Player, Position, PlayerSprite, Velocity, BoundingBox, Gravity, Jump>(player);
+    }
+
+    auto pipeView = m_reg.view<Pipe, Position, PipeSprite, Velocity, BoundingBox, PassedBird>();
+    for (auto& pipe : pipeView)
+    {
+        m_reg.remove<Pipe, Position, PipeSprite, Velocity, BoundingBox, PassedBird>(pipe);
+    }
+
     sf::Sprite playerSprite;
     playerSprite.setTexture(m_textureMap["bluebird-midflap"]);
     const entt::entity player = makePlayer(m_reg, playerSprite);
 
-    m_randomGenerator = std::mt19937(m_randomDevice());
-
     m_score = 0;
-
-    m_clock.restart();
 }
 
 void Application::update()
@@ -218,6 +237,18 @@ void Application::sUserInput()
                     canJump = true;
                 }
             }
+
+            if (evnt.key.code == sf::Keyboard::C)
+            {
+                if (m_drawCollision)
+                {
+                    m_drawCollision = false;
+                }
+                else
+                {
+                    m_drawCollision = true;
+                }
+            }
         }
     }
 }
@@ -260,7 +291,10 @@ void Application::sRender()
 
     pipeRender();
 
-    collisionRender();
+    if (m_drawCollision)
+    {
+        collisionRender();
+    }
 
     sScore();
 
@@ -298,6 +332,11 @@ void Application::sMovement()
         velocity.y += gravity.y;
         velocity.y = std::clamp(velocity.y, playerMinVelocityY, playerMaxVelocityY);
         pos.y += velocity.y;
+
+        if (pos.y < 0.f || pos.y > height)
+        {
+            restart();
+        }
     }
 }
 
@@ -358,6 +397,7 @@ void Application::sCollision()
             {
                 auto& velocity = playerView.get<Velocity>(player);
                 velocity.vel.y = 0;
+                restart();
                 //m_running = false;
             }
         }

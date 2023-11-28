@@ -8,6 +8,8 @@ class Application {
 protected:
 	sf::RenderWindow m_window;
 	bool m_running = true;
+	bool m_paused = false;
+	bool m_drawCollision = false;
 	int m_score;
 	std::map<std::string, sf::Texture> m_textureMap;
 	sf::Vector2f m_scale;
@@ -19,6 +21,7 @@ protected:
 
 	
 	void init();
+	void restart();
 	void update();
 
 	void sUserInput();
