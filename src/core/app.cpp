@@ -30,11 +30,71 @@ void Application::init()
     m_window.create(sf::VideoMode(width, height), "CMake SFML Project");
     m_window.setFramerateLimit(144);
 
+    loadTextures();
+
+    loadFonts();
+
+    restart();
+
+    m_randomGenerator = std::mt19937(m_randomDevice());
+
+    m_clock.restart();
+}
+
+void Application::loadFonts()
+{
     // Get the current working directory
     std::filesystem::path currentPath = std::filesystem::current_path();
     std::cout << "Current working directory: " << currentPath << "\n";
 
-    std::filesystem::path texturePath = std::filesystem::path("../../../../assets/sprites");
+    std::filesystem::path fontPath = std::filesystem::path(fontLoadPath);
+
+    // Check if the directory exists
+    if (std::filesystem::exists(fontPath) && std::filesystem::is_directory(fontPath)) {
+        // Iterate over all files in the directory
+        for (auto& entry : std::filesystem::directory_iterator(fontPath)) {
+
+            // Get the file path
+            auto filePath = entry.path();
+
+            // Access individual components of the path
+            std::string directory = filePath.parent_path().string();
+            std::string filename = filePath.filename().string();
+            std::string stem = filePath.stem().string();
+            std::string extension = filePath.extension().string();
+
+            // print the components
+            std::cout << "directory: " << directory << "\n";
+            std::cout << "filename: " << filename << "\n";
+            std::cout << "stem: " << stem << "\n";
+            std::cout << "extension: " << extension << "\n";
+
+            // Print the file path
+            std::cout << "\n";
+
+            sf::Font font;
+            if (!font.loadFromFile(filePath.string()))
+            {
+                // error..
+            }
+            else
+            {
+                m_fontMap[stem] = font;
+            }
+        }
+    }
+    else {
+        std::cerr << "Directory not found." << "\n";
+    }
+}
+
+void Application::loadTextures()
+{
+    // Get the current working directory
+    std::filesystem::path currentPath = std::filesystem::current_path();
+    std::cout << "Current working directory: " << currentPath << "\n";
+
+    std::filesystem::path texturePath = std::filesystem::path(textureLoadPath);
 
     // Check if the directory exists
     if (std::filesystem::exists(texturePath) && std::filesystem::is_directory(texturePath)) {
@@ -73,12 +133,6 @@ void Application::init()
     else {
         std::cerr << "Directory not found." << "\n";
     }
-
-    restart();
-
-    m_randomGenerator = std::mt19937(m_randomDevice());
-
-    m_clock.restart();
 }
 
 void Application::restart()
@@ -105,6 +159,8 @@ void Application::restart()
 
 void Application::update()
 {
+    sUserInput();
+
     if (m_running)
     {
         m_elapsedTime = m_clock.getElapsedTime();
@@ -118,34 +174,18 @@ void Application::update()
         if (m_elapsedTime.asSeconds() >= 1)
         {
             //std::cout << "100 milliseconds have passed\n";
-            //sMovement();
             sPipeSpawner();
             m_clock.restart();
         }
     }
 
-    sUserInput();
-
-    //// TODO: 
-    //// update entity manager
-    //sCleanUpEntities();
-
-    //// pipe spawner
-
-    //// movement
-    //sMovement();
-
-    //// collision
-    //sCollision();
-    //// animation
-
-    //if (m_elapsedTime.asSeconds() >= 1)
-    //{
-    //    //std::cout << "100 milliseconds have passed\n";
-    //    //sMovement();
-    //    sPipeSpawner();
-    //    m_clock.restart();
-    //}
+    if (m_collided)
+    {
+        // TODO:
+        // draw Game Over + score
+        // Press R to play again
+        // Esc to quit
+    }
 
     // render
     sRender();

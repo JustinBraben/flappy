@@ -14,7 +14,9 @@ constexpr float width = 1280.f;
 
 constexpr float height = 600.f;
 
-constexpr std::string_view texturePath = "../../../../assets/sprites";
+constexpr std::string_view textureLoadPath = "../../../../assets/sprites";
+
+constexpr std::string_view fontLoadPath = "../../../../assets/fonts";
 
 constexpr float playerSpawnX = width / 2.0f;
 
