@@ -19,3 +19,11 @@ constexpr std::string_view texturePath = "../../../../assets/sprites";
 constexpr float playerSpawnX = width / 2.0f;
 
 constexpr float playerSpawnY = height / 2.0f;;
+
+constexpr float playerMaxVelocityY = 2.f;
+
+constexpr float playerMinVelocityY = -2.f;
+
+constexpr float playerJumpVelocityY = -1.f;
+
+constexpr float gravityVelocity = 0.02f;

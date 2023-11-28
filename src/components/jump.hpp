@@ -1,0 +1,3 @@
+struct Jump {
+	bool has;
+};

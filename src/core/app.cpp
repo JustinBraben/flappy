@@ -3,13 +3,14 @@
 #include "app.hpp"
 #include "constants.hpp"
 #include "factories.hpp"
-#include "../components/position.hpp"
-#include "../components/player.hpp"
-#include "../components/sprite.hpp"
-#include "../components/pipe.hpp"
-#include "../components/velocity.hpp"
-#include "../components/gravity.hpp"
 #include "../components/boundingbox.hpp"
+#include "../components/gravity.hpp"
+#include "../components/jump.hpp"
+#include "../components/pipe.hpp"
+#include "../components/player.hpp"
+#include "../components/position.hpp"
+#include "../components/sprite.hpp"
+#include "../components/velocity.hpp"
 #include "../sys/pipe_behaviour.hpp"
 
 #include <iostream>
@@ -154,6 +155,7 @@ void Application::sUserInput()
         }
 
         if (evnt.type == sf::Event::KeyPressed) {
+
             if (evnt.key.code == sf::Keyboard::X) {
                 std::cout << "screenshot saved to " << "test.png" << "\n";
                 sf::Texture texture;
@@ -162,6 +164,35 @@ void Application::sUserInput()
 
                 if (texture.copyToImage().saveToFile("test.png")) {
                     std::cout << "screenshot saved to " << "test.png" << "\n";
+                }
+            }
+
+            if (evnt.key.code == sf::Keyboard::Space)
+            {
+                const auto view = m_reg.view<PlayerSprite, Velocity, Jump>();
+                for (const auto& e : view)
+                {
+                    if (view.get<Jump>(e).has)
+                    {
+                        auto& velocity = view.get<Velocity>(e).vel;
+                        auto& canJump = view.get<Jump>(e).has;
+                        velocity.y = 0.f;
+                        velocity.y += playerJumpVelocityY;
+                        canJump = false;
+                    }
+                }
+            }
+        }
+
+        if (evnt.type == sf::Event::KeyReleased)
+        {
+            if (evnt.key.code == sf::Keyboard::Space)
+            {
+                const auto view = m_reg.view<PlayerSprite, Jump>();
+                for (const auto& e : view)
+                {
+                    auto& canJump = view.get<Jump>(e).has;
+                    canJump = true;
                 }
             }
         }
@@ -229,8 +260,9 @@ void Application::sMovement()
         auto& pos = playerView.get<Position>(e).pos;
         auto& velocity = playerView.get<Velocity>(e).vel;
         auto& gravity = playerView.get<Gravity>(e).vel;
-        //velocity.y += gravity.y;
-        //pos.y += gravity.y;
+        velocity.y += gravity.y;
+        std::clamp(velocity.y, playerMinVelocityY, playerMaxVelocityY);
+        pos.y += velocity.y;
     }
 }
 
