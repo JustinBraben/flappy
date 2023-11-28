@@ -4,6 +4,7 @@
 #include "../components/sprite.hpp"
 #include "../components/pipe.hpp"
 #include "../components/velocity.hpp"
+#include "../components/gravity.hpp"
 #include <entt/entity/registry.hpp>
 
 void destroyPipe(entt::registry &reg)

@@ -8,6 +8,7 @@
 #include "../components/sprite.hpp"
 #include "../components/pipe.hpp"
 #include "../components/velocity.hpp"
+#include "../components/gravity.hpp"
 #include "../sys/pipe_behaviour.hpp"
 
 #include <iostream>
@@ -208,6 +209,17 @@ void Application::sMovement()
         auto& pos = view.get<Position>(e).pos;
         auto& velocity = view.get<Velocity>(e).vel;
         pos.x += velocity.x;
+    }
+
+    const auto playerView = m_reg.view<Position, Velocity, Gravity>();
+
+    for (const auto& e : playerView)
+    {
+        auto& pos = playerView.get<Position>(e).pos;
+        auto& velocity = playerView.get<Velocity>(e).vel;
+        auto& gravity = playerView.get<Gravity>(e).vel;
+        //velocity.y += gravity.y;
+        pos.y += gravity.y;
     }
 }
 
