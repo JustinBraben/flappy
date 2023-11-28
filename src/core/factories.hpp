@@ -4,4 +4,4 @@
 #include <SFML/Graphics.hpp>
 
 entt::entity makePlayer(entt::registry& reg, sf::Sprite& playerSprite);
-entt::entity makePipe(entt::registry& reg, entt::entity);
+entt::entity makePipe(entt::registry& reg, sf::Sprite& sprite, sf::Vector2f& pos);

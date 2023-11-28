@@ -8,6 +8,7 @@ protected:
 	sf::RenderWindow m_window;
 	bool m_running = true;
 	std::map<std::string, sf::Texture> m_textureMap;
+	sf::Vector2f m_scale;
 	entt::registry m_reg;
 	
 	void init();
@@ -18,6 +19,7 @@ protected:
 
 	void backgroundRender();
 	void playerRender();
+	void pipeRender();
 public:
 	Application();
 	~Application();

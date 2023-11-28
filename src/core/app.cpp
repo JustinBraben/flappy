@@ -5,6 +5,7 @@
 #include "../components/position.hpp"
 #include "../components/player.hpp"
 #include "../components/sprite.hpp"
+#include "../components/pipe.hpp"
 
 #include <iostream>
 #include <filesystem>
@@ -66,6 +67,10 @@ void Application::init()
     sf::Sprite playerSprite;
     playerSprite.setTexture(m_textureMap["bluebird-midflap"]);
     const entt::entity player = makePlayer(m_reg, playerSprite);
+
+    sf::Sprite pipeSprite;
+    pipeSprite.setTexture(m_textureMap["pipe-green"]);
+    const entt::entity pipe = makePipe(m_reg, pipeSprite, sf::Vector2f(1000.f, 200.f));
 }
 
 void Application::update()
@@ -149,6 +154,8 @@ void Application::sRender()
 
     playerRender();
 
+    pipeRender();
+
     m_window.display();
 }
 
@@ -160,6 +167,8 @@ void Application::backgroundRender()
         static_cast<float>(m_window.getSize().x) / background.getLocalBounds().width,
         static_cast<float>(m_window.getSize().y) / background.getLocalBounds().height
     );
+
+    m_scale = background.getScale();
 
     m_window.draw(background);
 }
@@ -173,6 +182,25 @@ void Application::playerRender()
         auto& sprite = view.get<PlayerSprite>(e).id;
         auto& pos = view.get<Position>(e).pos;
         sprite.setPosition(pos);
+        /*sprite.setScale(
+            m_scale
+        );*/
+        m_window.draw(sprite);
+    }
+}
+
+void Application::pipeRender()
+{
+    const auto view = m_reg.view<Position, PipeSprite>();
+
+    for (const auto& e : view)
+    {
+        auto& sprite = view.get<PipeSprite>(e).id;
+        auto& pos = view.get<Position>(e).pos;
+        sprite.setPosition(pos);
+        /*sprite.setScale(
+            m_scale
+        );*/
         m_window.draw(sprite);
     }
 }
