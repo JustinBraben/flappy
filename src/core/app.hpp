@@ -2,6 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <entt/entity/registry.hpp>
+#include <random>
 
 class Application {
 protected:
@@ -12,6 +13,8 @@ protected:
 	entt::registry m_reg;
 	sf::Clock m_clock;
 	sf::Time m_elapsedTime;
+	std::random_device m_randomDevice;
+	std::mt19937 m_randomGenerator;
 
 	
 	void init();
@@ -26,6 +29,7 @@ protected:
 	void backgroundRender();
 	void playerRender();
 	void pipeRender();
+	void collisionRender();
 public:
 	Application();
 	~Application();

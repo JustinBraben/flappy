@@ -9,6 +9,7 @@
 #include "../components/pipe.hpp"
 #include "../components/velocity.hpp"
 #include "../components/gravity.hpp"
+#include "../components/boundingbox.hpp"
 #include "../sys/pipe_behaviour.hpp"
 
 #include <iostream>
@@ -71,6 +72,8 @@ void Application::init()
     sf::Sprite playerSprite;
     playerSprite.setTexture(m_textureMap["bluebird-midflap"]);
     const entt::entity player = makePlayer(m_reg, playerSprite);
+
+    m_randomGenerator = std::mt19937(m_randomDevice());
 
     m_clock.restart();
 }
@@ -172,9 +175,15 @@ void Application::sCleanUpEntities()
 
 void Application::sPipeSpawner()
 {
+    std::uniform_int_distribution<> distribPipeDistanceY(500, 600);
+    std::uniform_int_distribution<> distribBottomPipeY(height - (height / 4.f), height);
+
+    float pipeDistance = static_cast<float>(distribPipeDistanceY(m_randomGenerator));
+    float bottomPipeY = static_cast<float>(distribBottomPipeY(m_randomGenerator));
+
     sf::Sprite pipeSprite;
     pipeSprite.setTexture(m_textureMap["pipe-green"]);
-    auto posVec1 = sf::Vector2f(width, 400.f);
+    auto posVec1 = sf::Vector2f(width, bottomPipeY);
     auto velVec1 = sf::Vector2f(-2.f, 0.f);
     const entt::entity pipe = makePipe(m_reg, pipeSprite, posVec1, velVec1);
     
@@ -196,6 +205,8 @@ void Application::sRender()
     playerRender();
 
     pipeRender();
+
+    collisionRender();
 
     m_window.display();
 }
@@ -239,12 +250,14 @@ void Application::backgroundRender()
 
 void Application::playerRender()
 {
-    const auto view = m_reg.view<Position, PlayerSprite>();
+    const auto view = m_reg.view<Position, BoundingBox, PlayerSprite>();
 
     for (const auto& e : view)
     {
-        auto& sprite = view.get<PlayerSprite>(e).id;
         auto& pos = view.get<Position>(e).pos;
+        auto& box = view.get<BoundingBox>(e);
+        auto& sprite = view.get<PlayerSprite>(e).id;
+        sprite.setOrigin(box.halfSize);
         sprite.setPosition(pos);
         /*sprite.setScale(
             m_scale
@@ -255,16 +268,37 @@ void Application::playerRender()
 
 void Application::pipeRender()
 {
-    const auto view = m_reg.view<Position, PipeSprite>();
+    const auto view = m_reg.view<Position, BoundingBox, PipeSprite>();
 
     for (const auto& e : view)
     {
-        auto& sprite = view.get<PipeSprite>(e).id;
         auto& pos = view.get<Position>(e).pos;
+        auto& box = view.get<BoundingBox>(e);
+        auto& sprite = view.get<PipeSprite>(e).id;
+        sprite.setOrigin(box.halfSize);
         sprite.setPosition(pos);
         /*sprite.setScale(
             m_scale
         );*/
         m_window.draw(sprite);
+    }
+}
+
+void Application::collisionRender() 
+{
+    const auto view = m_reg.view<Position, BoundingBox>();
+
+    for (const auto& e : view)
+    {
+        auto& pos = view.get<Position>(e).pos;
+        auto& box = view.get<BoundingBox>(e);
+        sf::RectangleShape rect;
+        rect.setSize(box.size);
+        rect.setOrigin(box.halfSize);
+        rect.setPosition(pos);
+        rect.setFillColor(sf::Color(0, 0, 0, 0));
+        rect.setOutlineColor(sf::Color(255, 255, 255, 255));
+        rect.setOutlineThickness(1);
+        m_window.draw(rect);
     }
 }
