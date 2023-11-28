@@ -1,6 +1,8 @@
 #pragma once
 
 #include "factories.hpp"
+
+#include "../core/constants.hpp"
 #include "../components/player.hpp"
 #include "../components/position.hpp"
 #include "../components/sprite.hpp"
@@ -16,7 +18,7 @@ entt::entity makePlayer(entt::registry &reg, sf::Sprite &sprite)
 	sf::Vector2f gravity = { 0.f, 2.f };
 	const entt::entity player =  reg.create();
 	reg.emplace<Player>(player);
-	reg.emplace<Position>(player, sf::Vector2f(30.f, 30.f));
+	reg.emplace<Position>(player, sf::Vector2f(playerSpawnX, playerSpawnY));
 	reg.emplace<PlayerSprite>(player, sprite);
 	reg.emplace<Velocity>(player, velocity);
 	reg.emplace<Gravity>(player, gravity);
