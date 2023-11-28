@@ -32,7 +32,7 @@ FetchContent_MakeAvailable(EnTT)
 message(STATUS "Binary directory: ${CMAKE_BINARY_DIR}")
 
 # Create an executable target named "flappy" with the source file src/main.cpp
-add_executable(${projectName} src/main.cpp "src/core/app.cpp" "src/core/factories.cpp")
+add_executable(${projectName} src/main.cpp "src/core/app.cpp" "src/core/factories.cpp" "src/sys/pipe_behaviour.cpp")
 
 # Link the executable against SFML and EnTT libraries
 target_link_libraries(${projectName} PRIVATE sfml-graphics EnTT::EnTT)

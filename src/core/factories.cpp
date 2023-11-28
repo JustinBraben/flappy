@@ -5,6 +5,7 @@
 #include "../components/position.hpp"
 #include "../components/sprite.hpp"
 #include "../components/pipe.hpp"
+#include "../components/velocity.hpp"
 
 #include <entt/entity/registry.hpp>
 
@@ -17,11 +18,12 @@ entt::entity makePlayer(entt::registry &reg, sf::Sprite &sprite)
 	return player;
 }
 
-entt::entity makePipe(entt::registry &reg, sf::Sprite& sprite, sf::Vector2f& pos)
+entt::entity makePipe(entt::registry &reg, sf::Sprite& sprite, sf::Vector2f& pos, sf::Vector2f& velocity)
 {
 	const entt::entity pipe = reg.create();
-	reg.emplace<Player>(pipe);
+	reg.emplace<Pipe>(pipe);
 	reg.emplace<Position>(pipe, pos);
 	reg.emplace<PipeSprite>(pipe, sprite);
+	reg.emplace<Velocity>(pipe, velocity);
 	return pipe;
 }

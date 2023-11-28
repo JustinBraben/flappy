@@ -10,12 +10,18 @@ protected:
 	std::map<std::string, sf::Texture> m_textureMap;
 	sf::Vector2f m_scale;
 	entt::registry m_reg;
+	sf::Clock m_clock;
+	sf::Time m_elapsedTime;
+
 	
 	void init();
 	void update();
 
 	void sUserInput();
+	void sCleanUpEntities();
+	void sPipeSpawner();
 	void sRender();
+	void sMovement();
 
 	void backgroundRender();
 	void playerRender();

@@ -1,11 +1,14 @@
 #pragma once
 
 #include "app.hpp"
+#include "constants.hpp"
 #include "factories.hpp"
 #include "../components/position.hpp"
 #include "../components/player.hpp"
 #include "../components/sprite.hpp"
 #include "../components/pipe.hpp"
+#include "../components/velocity.hpp"
+#include "../sys/pipe_behaviour.hpp"
 
 #include <iostream>
 #include <filesystem>
@@ -18,14 +21,14 @@ Application::Application()
 
 void Application::init()
 {
-    m_window.create(sf::VideoMode(1920u, 1080u), "CMake SFML Project");
+    m_window.create(sf::VideoMode(width, height), "CMake SFML Project");
     m_window.setFramerateLimit(144);
 
     // Get the current working directory
     std::filesystem::path currentPath = std::filesystem::current_path();
     std::cout << "Current working directory: " << currentPath << "\n";
 
-    std::filesystem::path texturePath = "../../../../assets/sprites";
+    std::filesystem::path texturePath = std::filesystem::path("../../../../assets/sprites");
 
     // Check if the directory exists
     if (std::filesystem::exists(texturePath) && std::filesystem::is_directory(texturePath)) {
@@ -68,20 +71,35 @@ void Application::init()
     playerSprite.setTexture(m_textureMap["bluebird-midflap"]);
     const entt::entity player = makePlayer(m_reg, playerSprite);
 
-    sf::Sprite pipeSprite;
-    pipeSprite.setTexture(m_textureMap["pipe-green"]);
-    const entt::entity pipe = makePipe(m_reg, pipeSprite, sf::Vector2f(1000.f, 200.f));
+    m_clock.restart();
 }
 
 void Application::update()
 {
+    m_elapsedTime = m_clock.getElapsedTime();
+
     sUserInput();
 
     // TODO: 
     // update entity manager
+    sCleanUpEntities();
+
     // pipe spawner
+
+    // movement
+    sMovement();
+
     // collision
     // animation
+
+    if (m_elapsedTime.asSeconds() >= 1)
+    {
+        //std::cout << "100 milliseconds have passed\n";
+        //sMovement();
+        sPipeSpawner();
+        m_clock.restart();
+    }
+
     // render
     sRender();
 }
@@ -146,6 +164,24 @@ void Application::sUserInput()
     }
 }
 
+void Application::sCleanUpEntities()
+{
+    destroyPipe(m_reg);
+}
+
+void Application::sPipeSpawner()
+{
+    sf::Sprite pipeSprite;
+    pipeSprite.setTexture(m_textureMap["pipe-green"]);
+    const entt::entity pipe = makePipe(m_reg, pipeSprite, sf::Vector2f(1000.f, 400.f), sf::Vector2f(-2.f, 0.f));
+    
+    sf::Sprite upsideDownPipeSprite;
+    upsideDownPipeSprite.setTexture(m_textureMap["pipe-green"]);
+
+    upsideDownPipeSprite.setScale(upsideDownPipeSprite.getScale().x, -1.f * upsideDownPipeSprite.getScale().y);
+    const entt::entity upsideDownPipe = makePipe(m_reg, upsideDownPipeSprite, sf::Vector2f(1000.f, 200.f), sf::Vector2f(-2.f, 0.f));
+}
+
 void Application::sRender()
 {
     m_window.clear();
@@ -157,6 +193,18 @@ void Application::sRender()
     pipeRender();
 
     m_window.display();
+}
+
+void Application::sMovement()
+{
+    const auto view = m_reg.view<Position, PipeSprite, Velocity>();
+
+    for (const auto& e : view)
+    {
+        auto& pos = view.get<Position>(e).pos;
+        auto& velocity = view.get<Velocity>(e).vel;
+        pos.x += velocity.x;
+    }
 }
 
 void Application::backgroundRender()
