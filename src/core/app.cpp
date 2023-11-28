@@ -1,28 +1,29 @@
-#include "app.hpp"
+#pragma once
 
-#include <SFML/Graphics.hpp>
+#include "app.hpp"
+#include "factories.hpp"
+#include "../components/position.hpp"
+#include "../components/player.hpp"
+#include "../components/sprite.hpp"
+
 #include <iostream>
 #include <filesystem>
 
+
 Application::Application()
 {
+    init();
 }
 
-Application::~Application()
+void Application::init()
 {
-}
-
-void Application::run()
-{
-    //auto window = sf::RenderWindow{ { 288u, 512u }, "CMake SFML Project" };
-    auto window = sf::RenderWindow{ { 1920u, 1080u }, "CMake SFML Project" };
-    window.setFramerateLimit(144);
+    m_window.create(sf::VideoMode(1920u, 1080u), "CMake SFML Project");
+    m_window.setFramerateLimit(144);
 
     // Get the current working directory
     std::filesystem::path currentPath = std::filesystem::current_path();
     std::cout << "Current working directory: " << currentPath << "\n";
 
-    std::map<std::string, sf::Texture> textureMap;
     std::filesystem::path texturePath = "../../../../assets/sprites";
 
     // Check if the directory exists
@@ -55,49 +56,123 @@ void Application::run()
             }
             else
             {
-                textureMap[stem] = texture;
+                m_textureMap[stem] = texture;
             }
         }
     }
     else {
         std::cerr << "Directory not found." << "\n";
     }
-    
-    sf::Texture backgroundTexture;
-    if (!backgroundTexture.loadFromFile("../../../../assets/sprites/background-day.png"))
+    sf::Sprite playerSprite;
+    playerSprite.setTexture(m_textureMap["bluebird-midflap"]);
+    const entt::entity player = makePlayer(m_reg, playerSprite);
+}
+
+void Application::update()
+{
+    sUserInput();
+
+    // TODO: 
+    // update entity manager
+    // pipe spawner
+    // collision
+    // animation
+    // render
+    sRender();
+}
+
+Application::~Application()
+{
+
+}
+
+void Application::quit()
+{
+    m_running = false;
+}
+
+void Application::run()
+{
+    ////auto window = sf::RenderWindow{ { 288u, 512u }, "CMake SFML Project" };
+    //auto window = sf::RenderWindow{ { 1920u, 1080u }, "CMake SFML Project" };
+    //window.setFramerateLimit(144);
+
+    std::cout << "Game is now running\n";
+
+    while (isRunning())
     {
-        // error..
+        update();
     }
 
-    sf::Sprite background; 
-    background.setTexture(textureMap["background-night"]);
-    background.setScale(
-        static_cast<float>(window.getSize().x) / background.getLocalBounds().width, 
-        static_cast<float>(window.getSize().y) / background.getLocalBounds().height
-    );
+    m_window.close();
 
-    while (window.isOpen())
-    {
-        for (auto event = sf::Event{}; window.pollEvent(event);)
-        {
-            if (event.type == sf::Event::Closed)
-            {
-                window.close();
-            }
+    std::cout << "Game is now done running, Press Enter to continue...\n";
+
+    //std::cin.ignore();  // Ignore any characters in the input buffer
+    std::cin.get();     // Wait for the user to press Enter
+}
+
+bool Application::isRunning()
+{
+    return m_running && m_window.isOpen();
+}
+
+void Application::sUserInput()
+{
+    sf::Event evnt;
+    while (m_window.pollEvent(evnt)) {
+
+        if (evnt.type == sf::Event::Closed) {
+            quit();
         }
 
-        window.clear();
+        if (evnt.type == sf::Event::KeyPressed) {
+            if (evnt.key.code == sf::Keyboard::X) {
+                std::cout << "screenshot saved to " << "test.png" << "\n";
+                sf::Texture texture;
+                texture.create(m_window.getSize().x, m_window.getSize().y);
+                texture.update(m_window);
 
-        window.draw(background);
-
-        window.display();
+                if (texture.copyToImage().saveToFile("test.png")) {
+                    std::cout << "screenshot saved to " << "test.png" << "\n";
+                }
+            }
+        }
     }
+}
 
-    std::cout << "hello\n";
+void Application::sRender()
+{
+    m_window.clear();
 
-    // Declare a string to store user input
-    std::string userInput;
+    backgroundRender();
 
-    // Use std::getline to read a line of input (including spaces)
-    std::getline(std::cin, userInput);
+    playerRender();
+
+    m_window.display();
+}
+
+void Application::backgroundRender()
+{
+    sf::Sprite background;
+    background.setTexture(m_textureMap["background-night"]);
+    background.setScale(
+        static_cast<float>(m_window.getSize().x) / background.getLocalBounds().width,
+        static_cast<float>(m_window.getSize().y) / background.getLocalBounds().height
+    );
+
+    m_window.draw(background);
+}
+
+void Application::playerRender()
+{
+    const auto view = m_reg.view<Position, PlayerSprite>();
+
+    for (const auto& e : view)
+    {
+        auto& sprite = view.get<PlayerSprite>(e).id;
+        auto& pos = view.get<Position>(e).pos;
+        sprite.setPosition(pos);
+        m_window.draw(sprite);
+    }
 }

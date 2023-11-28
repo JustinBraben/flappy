@@ -4,9 +4,6 @@
 #include <string>
 #include "core/app.hpp"
 
-#include <SFML/Graphics.hpp>
-#include <entt/entt.hpp>
-
 int main()
 {
     Application app;
