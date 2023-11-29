@@ -41,6 +41,7 @@ protected:
 	void playerRender();
 	void pipeRender();
 	void collisionRender();
+	void gameOverRender();
 public:
 	Application();
 	~Application();

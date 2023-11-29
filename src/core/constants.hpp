@@ -28,4 +28,4 @@ constexpr float playerMinVelocityY = -2.f;
 
 constexpr float playerJumpVelocityY = -1.f;
 
-constexpr float gravityVelocity = 0.02f;
+constexpr float gravityVelocity = 0.03f;

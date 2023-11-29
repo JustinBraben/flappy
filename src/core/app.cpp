@@ -155,6 +155,7 @@ void Application::restart()
     const entt::entity player = makePlayer(m_reg, playerSprite);
 
     m_score = 0;
+    m_collided = false;
 }
 
 void Application::update()
@@ -166,10 +167,6 @@ void Application::update()
         m_elapsedTime = m_clock.getElapsedTime();
 
         sCleanUpEntities();
-
-        sMovement();
-
-        sCollision();
 
         if (m_elapsedTime.asSeconds() >= 1)
         {
@@ -183,9 +180,16 @@ void Application::update()
     {
         // TODO:
         // draw Game Over + score
+
         // Press R to play again
         // Esc to quit
     }
+    else
+    {
+        sMovement();
+    }
+
+    sCollision();
 
     // render
     sRender();
@@ -289,6 +293,16 @@ void Application::sUserInput()
                     m_drawCollision = true;
                 }
             }
+
+            if (evnt.key.code == sf::Keyboard::R)
+            {
+                restart();
+            }
+
+            if (evnt.key.code == sf::Keyboard::Escape)
+            {
+                m_running = false;
+            }
         }
     }
 }
@@ -336,6 +350,11 @@ void Application::sRender()
         collisionRender();
     }
 
+    if (m_collided)
+    {
+        gameOverRender();
+    }
+
     sScore();
 
     m_window.display();
@@ -375,7 +394,8 @@ void Application::sMovement()
 
         if (pos.y < 0.f || pos.y > height)
         {
-            restart();
+            m_collided = true;
+            //restart();
         }
     }
 }
@@ -437,7 +457,8 @@ void Application::sCollision()
             {
                 auto& velocity = playerView.get<Velocity>(player);
                 velocity.vel.y = 0;
-                restart();
+                m_collided = true;
+                //restart();
                 //m_running = false;
             }
         }
@@ -531,4 +552,19 @@ void Application::collisionRender()
         rect.setOutlineThickness(1);
         m_window.draw(rect);
     }
+}
+
+void Application::gameOverRender()
+{
+    sf::Text gameOverText;
+    gameOverText.setString("GAME OVER\nPress R to restart\nPress Esc to quit");
+    gameOverText.setFont(m_fontMap["AboveDemoRegular-lJMd"]);
+    gameOverText.setCharacterSize(32);
+    gameOverText.setFillColor(sf::Color::Red);
+    gameOverText.setOrigin(
+        gameOverText.getLocalBounds().getSize().x / 2.0f,
+        gameOverText.getLocalBounds().getSize().y / 2.0f
+    );
+    gameOverText.setPosition(width / 2.f, height / 2.f);
+    m_window.draw(gameOverText);
 }
