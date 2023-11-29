@@ -1,6 +1,6 @@
 # Flappy Bird Clone
 
-![Flappy Bird Clone](flappy_clone.png)
+![flappy_clone.png](https://github.com/JustinBraben/flappy/blob/master/flappy_clone.PNG)
 
 ## Overview
 
