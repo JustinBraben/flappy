@@ -14,13 +14,13 @@ constexpr float width = 1280.f;
 
 constexpr float height = 600.f;
 
-constexpr std::string_view textureLoadPath = "../../../../assets/sprites";
+constexpr auto textureLoadPath = "../../../../assets/sprites";
 
-constexpr std::string_view fontLoadPath = "../../../../assets/fonts";
+constexpr auto fontLoadPath = "../../../../assets/fonts";
 
 constexpr float playerSpawnX = width / 2.0f;
 
-constexpr float playerSpawnY = height / 2.0f;;
+constexpr float playerSpawnY = height / 2.0f;
 
 constexpr float playerMaxVelocityY = 2.f;
 

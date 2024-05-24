@@ -1,5 +1,10 @@
 # Specify the minimum required CMake version
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.21)
+
+# Only set the cxx_standard if it is not set by someone else
+if (NOT DEFINED CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 20)
+endif()
 
 # Set the variable projectName to "flappy"
 set(projectName "flappy")
@@ -42,6 +47,7 @@ target_compile_features(${projectName} PRIVATE cxx_std_17)
 
 # Check if the platform is Windows
 if(WIN32)
+    message(STATUS "System is Win32, adding OpenAL DLL before building")
     # Add a custom command to copy OpenAL DLL before building
     add_custom_command(
         TARGET ${projectName}
