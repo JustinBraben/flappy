@@ -14,9 +14,9 @@ constexpr float width = 1280.f;
 
 constexpr float height = 600.f;
 
-constexpr auto textureLoadPath = "../../../../assets/sprites";
+constexpr auto textureLoadPath = "../assets/sprites";
 
-constexpr auto fontLoadPath = "../../../../assets/fonts";
+constexpr auto fontLoadPath = "../assets/fonts";
 
 constexpr float playerSpawnX = width / 2.0f;
 
