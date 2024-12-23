@@ -18,12 +18,12 @@
 entt::entity makePlayer(entt::registry &reg, sf::Sprite &sprite)
 {
 	sf::Vector2f size = sf::Vector2f(
-		sprite.getTexture()->getSize().x,
-		sprite.getTexture()->getSize().y
+		sprite.getTexture().getSize().x,
+		sprite.getTexture().getSize().y
 	);
 	sf::Vector2f halfSize = sf::Vector2f(
-		sprite.getTexture()->getSize().x / 2,
-		sprite.getTexture()->getSize().y / 2
+		sprite.getTexture().getSize().x / 2,
+		sprite.getTexture().getSize().y / 2
 	);
 	sf::Vector2f velocity = { 0.f, 0.f };
 	sf::Vector2f gravity = { 0.f, gravityVelocity };
@@ -41,12 +41,12 @@ entt::entity makePlayer(entt::registry &reg, sf::Sprite &sprite)
 entt::entity makePipe(entt::registry &reg, sf::Sprite& sprite, sf::Vector2f pos, sf::Vector2f velocity)
 {
 	sf::Vector2f size = sf::Vector2f(
-		sprite.getTexture()->getSize().x, 
-		sprite.getTexture()->getSize().y
+		sprite.getTexture().getSize().x, 
+		sprite.getTexture().getSize().y
 	);
 	sf::Vector2f halfSize = sf::Vector2f(
-		sprite.getTexture()->getSize().x / 2,
-		sprite.getTexture()->getSize().y / 2
+		sprite.getTexture().getSize().x / 2,
+		sprite.getTexture().getSize().y / 2
 	);
 	const entt::entity pipe = reg.create();
 	reg.emplace<Pipe>(pipe);

@@ -27,7 +27,7 @@ Application::Application()
 
 void Application::init()
 {
-    m_window.create(sf::VideoMode(width, height), "CMake SFML Project");
+    m_window.create(sf::VideoMode(sf::Vector2u(width, height)), sf::String("Flappy window"));
     m_window.setFramerateLimit(144);
 
     loadTextures();
@@ -73,7 +73,7 @@ void Application::loadFonts()
             std::cout << "\n";
 
             sf::Font font;
-            if (!font.loadFromFile(filePath.string()))
+            if (!font.openFromFile(filePath.string()))
             {
                 // error..
             }
@@ -150,8 +150,7 @@ void Application::restart()
         m_reg.remove<Pipe, Position, PipeSprite, Velocity, BoundingBox, PassedBird>(pipe);
     }
 
-    sf::Sprite playerSprite;
-    playerSprite.setTexture(m_textureMap["bluebird-midflap"]);
+    auto playerSprite = sf::Sprite(m_textureMap["bluebird-midflap"]);
     const entt::entity player = makePlayer(m_reg, playerSprite);
 
     m_score = 0;
@@ -233,19 +232,17 @@ bool Application::isRunning()
 
 void Application::sUserInput()
 {
-    sf::Event evnt;
-    while (m_window.pollEvent(evnt)) {
+    while (const std::optional evnt = m_window.pollEvent()) {
 
-        if (evnt.type == sf::Event::Closed) {
+        if (evnt->is<sf::Event::Closed>()) {
             quit();
         }
 
-        if (evnt.type == sf::Event::KeyPressed) {
+        if (const auto* keyPressed = evnt->getIf<sf::Event::KeyPressed>()) {
 
-            if (evnt.key.code == sf::Keyboard::X) {
+            if (keyPressed->scancode == sf::Keyboard::Scancode::X) {
                 std::cout << "screenshot saved to " << "test.png" << "\n";
-                sf::Texture texture;
-                texture.create(m_window.getSize().x, m_window.getSize().y);
+                auto texture = sf::Texture(m_window.getSize());
                 texture.update(m_window);
 
                 if (texture.copyToImage().saveToFile("test.png")) {
@@ -253,7 +250,7 @@ void Application::sUserInput()
                 }
             }
 
-            if (evnt.key.code == sf::Keyboard::Space)
+            if (keyPressed->scancode == sf::Keyboard::Scancode::Space)
             {
                 const auto view = m_reg.view<PlayerSprite, Velocity, Jump>();
                 for (const auto& e : view)
@@ -270,9 +267,9 @@ void Application::sUserInput()
             }
         }
 
-        if (evnt.type == sf::Event::KeyReleased)
+        if (const auto* keyReleased = evnt->getIf<sf::Event::KeyReleased>())
         {
-            if (evnt.key.code == sf::Keyboard::Space)
+            if (keyReleased->scancode == sf::Keyboard::Scancode::Space)
             {
                 const auto view = m_reg.view<PlayerSprite, Jump>();
                 for (const auto& e : view)
@@ -282,7 +279,7 @@ void Application::sUserInput()
                 }
             }
 
-            if (evnt.key.code == sf::Keyboard::C)
+            if (keyReleased->scancode == sf::Keyboard::Scancode::C)
             {
                 if (m_drawCollision)
                 {
@@ -294,12 +291,12 @@ void Application::sUserInput()
                 }
             }
 
-            if (evnt.key.code == sf::Keyboard::R)
+            if (keyReleased->scancode == sf::Keyboard::Scancode::R)
             {
                 restart();
             }
 
-            if (evnt.key.code == sf::Keyboard::Escape)
+            if (keyReleased->scancode == sf::Keyboard::Scancode::Escape)
             {
                 m_running = false;
             }
@@ -320,18 +317,21 @@ void Application::sPipeSpawner()
     float pipeDistance = static_cast<float>(distribPipeDistanceY(m_randomGenerator));
     float bottomPipeY = static_cast<float>(distribBottomPipeY(m_randomGenerator));
 
-    sf::Sprite pipeSprite;
-    pipeSprite.setTexture(m_textureMap["pipe-green"]);
+    auto pipeSprite = sf::Sprite(m_textureMap["pipe-green"]);
     auto posVec1 = sf::Vector2f(width, bottomPipeY);
     auto velVec1 = sf::Vector2f(-2.f, 0.f);
     const entt::entity pipe = makePipe(m_reg, pipeSprite, posVec1, velVec1);
     
-    sf::Sprite upsideDownPipeSprite;
-    upsideDownPipeSprite.setTexture(m_textureMap["pipe-green"]);
+    auto upsideDownPipeSprite = sf::Sprite(m_textureMap["pipe-green"]);
     auto posVec2 = sf::Vector2f(width, posVec1.y - pipeDistance);
     auto velVec2 = sf::Vector2f(-2.f, 0.f);
 
-    upsideDownPipeSprite.setScale(upsideDownPipeSprite.getScale().x, -1.f * upsideDownPipeSprite.getScale().y);
+    upsideDownPipeSprite.setScale(
+        sf::Vector2f(
+            upsideDownPipeSprite.getScale().x, 
+            -1.f * upsideDownPipeSprite.getScale().y
+        )
+    );
     const entt::entity upsideDownPipe = makePipe(m_reg, upsideDownPipeSprite, posVec2, velVec2);
 }
 
@@ -373,7 +373,7 @@ void Application::sMovement()
         pos.x += velocity.x;
 
         if (!hasPassedBird && 
-           (pos.x < ((width / 2.f) - (sprite.getTexture()->getSize().x / 2.f))) &&
+           (pos.x < ((width / 2.f) - (sprite.getTexture().getSize().x / 2.f))) &&
             pos.y <= height - (height / 4.f))
         {
             m_score += 1;
@@ -421,11 +421,13 @@ void Application::sScore()
     for (const auto& letter : letters)
     {
         auto& texture = m_textureMap[letter];
-        sf::Sprite scoreSprite;
+        auto scoreSprite = sf::Sprite(texture);
         scoreSprite.setTexture(texture);
         scoreSprite.setOrigin(
-            texture.getSize().x / 2.f,
-            texture.getSize().y / 2.f
+            sf::Vector2f(
+                static_cast<float>(texture.getSize().x) / 2.f,
+                static_cast<float>(texture.getSize().y) / 2.f
+            )
         );
         scoreSprites.push_back(scoreSprite);
     }
@@ -433,10 +435,12 @@ void Application::sScore()
     for (auto& sprite : scoreSprites)
     {
         sprite.setPosition(
-            scoreMiddleLocation.x,
-            scoreMiddleLocation.y
+            sf::Vector2f(
+                scoreMiddleLocation.x,
+                scoreMiddleLocation.y
+            )
         );
-        scoreMiddleLocation.x += sprite.getTexture()->getSize().x;
+        scoreMiddleLocation.x += sprite.getTexture().getSize().x;
         m_window.draw(sprite);
     }
 }
@@ -485,12 +489,11 @@ sf::Vector2f Application::checkOverlap(const entt::entity& a, const entt::entity
 
 void Application::backgroundRender()
 {
-    sf::Sprite background;
-    background.setTexture(m_textureMap["background-night"]);
-    background.setScale(
-        static_cast<float>(m_window.getSize().x) / background.getLocalBounds().width,
-        static_cast<float>(m_window.getSize().y) / background.getLocalBounds().height
-    );
+    sf::Sprite background = sf::Sprite(m_textureMap["background-night"]);
+    background.setScale( sf::Vector2f(
+        static_cast<float>(m_window.getSize().x) / background.getLocalBounds().size.x,
+        static_cast<float>(m_window.getSize().y) / background.getLocalBounds().size.y
+    ));
 
     m_scale = background.getScale();
 
@@ -508,7 +511,7 @@ void Application::playerRender()
         auto& velocity = view.get<Velocity>(e).vel;
         auto& sprite = view.get<PlayerSprite>(e).id;
         sprite.setOrigin(box.halfSize);
-        sprite.setRotation(velocity.y * 40.f);
+        sprite.setRotation(sf::degrees(velocity.y * 40.f));
         sprite.setPosition(pos);
         /*sprite.setScale(
             m_scale
@@ -556,15 +559,22 @@ void Application::collisionRender()
 
 void Application::gameOverRender()
 {
-    sf::Text gameOverText;
+    auto gameOverText = sf::Text(m_fontMap["AboveDemoRegular-lJMd"], "GAME OVER\nPress R to restart\nPress Esc to quit");
     gameOverText.setString("GAME OVER\nPress R to restart\nPress Esc to quit");
     gameOverText.setFont(m_fontMap["AboveDemoRegular-lJMd"]);
     gameOverText.setCharacterSize(32);
     gameOverText.setFillColor(sf::Color::Red);
     gameOverText.setOrigin(
-        gameOverText.getLocalBounds().getSize().x / 2.0f,
-        gameOverText.getLocalBounds().getSize().y / 2.0f
+        sf::Vector2f(
+            gameOverText.getLocalBounds().size.x / 2.0f,
+            gameOverText.getLocalBounds().size.y / 2.0f
+        )
     );
-    gameOverText.setPosition(width / 2.f, height / 2.f);
+    gameOverText.setPosition(
+        sf::Vector2f(
+            width / 2.f, 
+            height / 2.f
+        )
+    );
     m_window.draw(gameOverText);
 }

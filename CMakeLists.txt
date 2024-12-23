@@ -24,7 +24,10 @@ include(FetchContent)
 # Fetch and declare SFML as an external dependency
 FetchContent_Declare(SFML
     GIT_REPOSITORY https://github.com/SFML/SFML.git
-    GIT_TAG 2.6.x)
+    GIT_TAG 3.0.0
+    GIT_SHALLOW ON
+    EXCLUDE_FROM_ALL
+    SYSTEM)
 FetchContent_MakeAvailable(SFML)
 
 # Fetch and declare EnTT as an external dependency
@@ -43,21 +46,10 @@ add_executable(${projectName} src/main.cpp "src/core/app.cpp" "src/core/factorie
 file(COPY "${CMAKE_SOURCE_DIR}/assets" DESTINATION "${CMAKE_BINARY_DIR}")
 
 # Link the executable against SFML and EnTT libraries
-target_link_libraries(${projectName} PRIVATE sfml-graphics EnTT::EnTT)
+target_link_libraries(${projectName} PRIVATE SFML::Graphics EnTT::EnTT)
 
 # Set the C++ standard to C++17 for the "flappy" target
 target_compile_features(${projectName} PRIVATE cxx_std_17)
-
-# Check if the platform is Windows
-if(WIN32)
-    message(STATUS "System is Win32, adding OpenAL DLL before building")
-    # Add a custom command to copy OpenAL DLL before building
-    add_custom_command(
-        TARGET ${projectName}
-        COMMENT "Copy OpenAL DLL"
-        PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${SFML_SOURCE_DIR}/extlibs/bin/$<IF:$<EQUAL:${CMAKE_SIZEOF_VOID_P},8>,x64,x86>/openal32.dll $<TARGET_FILE_DIR:${projectName}>
-        VERBATIM)
-endif()
 
 # Install the "flappy" target
 install(TARGETS ${projectName})

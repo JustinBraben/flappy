@@ -3,6 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include <entt/entity/registry.hpp>
 #include <random>
+#include <map>
 
 class Application {
 protected:
