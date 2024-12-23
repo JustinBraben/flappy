@@ -33,7 +33,7 @@ FetchContent_MakeAvailable(SFML)
 # Fetch and declare EnTT as an external dependency
 FetchContent_Declare(EnTT
     GIT_REPOSITORY https://github.com/skypjack/entt.git
-    GIT_TAG v3.12.2)  # Specify the desired tag or commit
+    GIT_TAG v3.14.0)  # Specify the desired tag or commit
 FetchContent_MakeAvailable(EnTT)
 
 # Debug info on where the binary directory is
